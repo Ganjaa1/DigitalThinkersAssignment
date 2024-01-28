@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DigitalThinkersAssignment.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalThinkersAssignment.Controllers
 {
     [ApiController]
     public class StockController : ControllerBase
     {
+        private IStockService stockService;
+        public StockController(IStockService stockService) 
+        {
+            this.stockService = stockService;
+        }
 
         [HttpPost]
         [Route("/api/v1/Stock")]
@@ -26,7 +32,7 @@ namespace DigitalThinkersAssignment.Controllers
         {
             try
             {
-                return Ok();
+                return Ok(this.stockService.GetCurrentStock());
             }
             catch (Exception ex)
             {
