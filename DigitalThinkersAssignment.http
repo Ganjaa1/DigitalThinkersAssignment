@@ -1,0 +1,6 @@
+@DigitalThinkersAssignment_HostAddress = http://localhost:5164
+
+GET {{DigitalThinkersAssignment_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
