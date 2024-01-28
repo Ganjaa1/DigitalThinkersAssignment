@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DigitalThinkersAssignment.Controllers
 {
     [ApiController]
+    [Route("api/v1/")]
     public class StockController : ControllerBase
     {
         private IStockService stockService;
@@ -12,12 +13,12 @@ namespace DigitalThinkersAssignment.Controllers
             this.stockService = stockService;
         }
 
-        [HttpPost]
-        [Route("/api/v1/Stock")]
-        public IActionResult Stock()
+        [HttpPost("Stock")]
+        public IActionResult UpdateStock([FromBody] Dictionary<string, int> currencies)
         {
             try
             {
+                stockService.UpdateStock(currencies);
                 return Ok();
             }
             catch (Exception ex)
@@ -26,8 +27,7 @@ namespace DigitalThinkersAssignment.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("/api/v1/Stock")]
+        [HttpGet("Stock")]
         public IActionResult GetCurrentStock() 
         {
             try
@@ -40,8 +40,7 @@ namespace DigitalThinkersAssignment.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("/api/v1/Checkout")]
+        [HttpPost("Checkout")]
         public IActionResult Checkout()
         {
             try
