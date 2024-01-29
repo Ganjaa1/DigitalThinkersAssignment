@@ -8,6 +8,7 @@ namespace DigitalThinkersAssignment.Services
     {
         private const string memoryAddress = "DTASTOCK";
         private readonly IMemoryCache memoryCache;
+        private const int euroExchangeRate = 380;
 
         public StockService(IMemoryCache memoryCache) 
         {
@@ -44,7 +45,9 @@ namespace DigitalThinkersAssignment.Services
 
             if (checkoutData.Price == null || checkoutData.Price <= 0) throw new StockException("The price entered must be a number or a non-negative number!");
 
-            int totalInserted = checkoutData.Inserted.Sum(kvp => Convert.ToInt32(kvp.Key) * kvp.Value);
+            int totalInserted = checkoutData.Currency == CurrencyType.HUF ? 
+                checkoutData.Inserted.Sum(kvp => Convert.ToInt32(kvp.Key) * kvp.Value) 
+                : checkoutData.Inserted.Sum(kvp => (Convert.ToInt32(kvp.Key) * euroExchangeRate) * kvp.Value);
             if (totalInserted < checkoutData.Price) throw new StockException("The cash given does not cover the price!");
 
             Dictionary<string, int> currentStock = (Dictionary<string, int>)memoryCache.Get(memoryAddress) ?? new();
@@ -63,10 +66,8 @@ namespace DigitalThinkersAssignment.Services
                     if (numChange > 0)
                     {
                         // check whether there is enough left to subtract from it
-                        if (stock.Value - numChange < 0)
-                        {
-                            continue;
-                        }
+                        if (stock.Value - numChange < 0) continue;
+
                         changeDict.Add(stock.Key, numChange);
                         change -= Convert.ToInt32(stock.Key) * numChange;
                         currentStock[stock.Key] -= numChange;
