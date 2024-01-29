@@ -60,5 +60,18 @@ namespace DigitalThinkersAssignment.Controllers
             }
         }
 
+        [HttpGet("BlockedBills")]
+        public IActionResult GetAvailableDenominations()
+        {
+            try
+            {
+                return Ok(this.stockService.GetAvailableDenominations());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

@@ -8,5 +8,6 @@ namespace DigitalThinkersAssignment.Services
         public Dictionary<string, int> UpdateStock(Dictionary<string, int> currencies);
         public Dictionary<string,int> GetCurrentStock();
         public Dictionary<string, int> Checkout(CheckoutData checkoutData);
+        public List<string> GetAvailableDenominations();
     }
 }

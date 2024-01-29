@@ -90,5 +90,11 @@ namespace DigitalThinkersAssignment.Services
             return changeDict;
         }
 
+
+        List<string> IStockService.GetAvailableDenominations()
+        {
+            Dictionary<string, int> currentStock = (Dictionary<string, int>)memoryCache.Get(memoryAddress) ?? new();
+            return currentStock.Select(stock => stock.Key).ToList();
+        }
     }
 }
