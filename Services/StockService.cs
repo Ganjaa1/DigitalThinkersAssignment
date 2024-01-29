@@ -8,10 +8,12 @@ namespace DigitalThinkersAssignment.Services
     {
         private const string memoryAddress = "DTASTOCK";
         private readonly IMemoryCache memoryCache;
+
         public StockService(IMemoryCache memoryCache) 
         {
             this.memoryCache = memoryCache;
         }
+
         public void UpdateStock(Dictionary<string, int> currencies)
         {
             Dictionary<string, int> currentStock = (Dictionary<string, int>)memoryCache.Get(memoryAddress) ?? new();
@@ -28,41 +30,58 @@ namespace DigitalThinkersAssignment.Services
             }
             memoryCache.Set(memoryAddress, currentStock);
         }
+
         public Dictionary<string, int> GetCurrentStock()
         {
             return (Dictionary<string, int>)memoryCache.Get(memoryAddress);
         }
 
-        public Dictionary<int, int> Checkout(CheckoutData checkoutData, int totalInserted)
+        public Dictionary<string, int> Checkout(CheckoutData checkoutData)
         {
+            if (checkoutData == null) throw new StockException("Invalid purchase request. Please provide a valid request!");
+
+            if (checkoutData.Price == null || checkoutData.Price <= 0) throw new StockException("The price entered must be a number or a non-negative number!");
+
+            int totalInserted = checkoutData.Inserted.Sum(kvp => Convert.ToInt32(kvp.Key) * kvp.Value);
+            if (totalInserted < checkoutData.Price) throw new StockException("The cash given does not cover the price!");
+
             Dictionary<string, int> currentStock = (Dictionary<string, int>)memoryCache.Get(memoryAddress) ?? new();
 
-            foreach (var kvp in checkoutData.Inserted)
+            // calc the change
+            int change = totalInserted - checkoutData.Price;
+            var changeDict = new Dictionary<string, int>();
+            while (change != 0) 
             {
-                if (currentStock.ContainsKey(kvp.Key))
+                Dictionary<string, int> availableChanges = currentStock.Where(s => Convert.ToInt32(s.Key) <= change).OrderByDescending(s => Convert.ToInt32(s.Key)).ToDictionary();
+                if(availableChanges.Count == 0) throw new StockException("No change available in stock!");
+                
+                foreach (var stock in availableChanges)
                 {
-                    currentStock[kvp.Key] -= kvp.Value;
-                    if (currentStock[kvp.Key] < 0)
+                    int numChange = change / Convert.ToInt32(stock.Key);
+                    if (numChange > 0)
                     {
-                        throw new StockException("Not enough items in stock");
+                        // check whether there is enough left to subtract from it
+                        if (stock.Value - numChange < 0)
+                        {
+                            continue;
+                        }
+                        changeDict.Add(stock.Key, numChange);
+                        change -= Convert.ToInt32(stock.Key) * numChange;
+                        currentStock[stock.Key] -= numChange;
                     }
-                }
-                else
-                {
-                    //return BadRequest(new { error = "Item not available in stock" });
-                    throw new StockException("Item not available in stock");
                 }
             }
 
-            int change = totalInserted - checkoutData.Price;
-            var changeDict = new Dictionary<int, int>();
-            foreach (var kvp in currentStock)
+            // updating the stock with the inserted coins
+            foreach (var insertedData in checkoutData.Inserted)
             {
-                int numChange = change / Convert.ToInt32(kvp.Key);
-                if (numChange > 0)
+                if (currentStock.ContainsKey(insertedData.Key))
                 {
-                    changeDict.Add(Convert.ToInt32(kvp.Key), numChange);
-                    change -= Convert.ToInt32(kvp.Key) * numChange;
+                    currentStock[insertedData.Key] += insertedData.Value;
+                }
+                else
+                {
+                    currentStock[insertedData.Key] = insertedData.Value;
                 }
             }
 
