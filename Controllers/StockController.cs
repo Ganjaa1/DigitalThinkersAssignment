@@ -22,8 +22,7 @@ namespace DigitalThinkersAssignment.Controllers
 
             try
             {
-                stockService.UpdateStock(currencies);
-                return Ok();
+                return Ok(stockService.UpdateStock(currencies));
             }
             catch (Exception ex)
             {

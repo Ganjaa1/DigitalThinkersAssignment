@@ -14,7 +14,7 @@ namespace DigitalThinkersAssignment.Services
             this.memoryCache = memoryCache;
         }
 
-        public void UpdateStock(Dictionary<string, int> currencies)
+        public Dictionary<string, int> UpdateStock(Dictionary<string, int> currencies)
         {
             Dictionary<string, int> currentStock = (Dictionary<string, int>)memoryCache.Get(memoryAddress) ?? new();
             foreach (var currency in currencies)
@@ -29,6 +29,8 @@ namespace DigitalThinkersAssignment.Services
                 }
             }
             memoryCache.Set(memoryAddress, currentStock);
+
+            return currentStock;
         }
 
         public Dictionary<string, int> GetCurrentStock()
