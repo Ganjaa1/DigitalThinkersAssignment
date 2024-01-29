@@ -8,7 +8,7 @@ namespace DigitalThinkersAssignment.Services
     {
         private const string memoryAddress = "DTASTOCK";
         private readonly IMemoryCache memoryCache;
-        private const int euroExchangeRate = 380;
+        private const int euroExchangeRate = 400;
 
         public StockService(IMemoryCache memoryCache) 
         {
@@ -58,7 +58,8 @@ namespace DigitalThinkersAssignment.Services
             while (change != 0) 
             {
                 Dictionary<string, int> availableChanges = currentStock.Where(s => Convert.ToInt32(s.Key) <= change).OrderByDescending(s => Convert.ToInt32(s.Key)).ToDictionary();
-                if(availableChanges.Count == 0) throw new StockException("No change available in stock!");
+                int availableChange = availableChanges.Sum(kvp => Convert.ToInt32(kvp.Key) * kvp.Value);
+                if (availableChanges.Count == 0 || change > availableChange) throw new StockException("There is not enough change available in stock!");
                 
                 foreach (var stock in availableChanges)
                 {
